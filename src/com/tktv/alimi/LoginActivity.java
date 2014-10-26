@@ -8,9 +8,12 @@ import com.tktv.alimi.Settings.Settings;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,8 +28,10 @@ import android.widget.LinearLayout;
 
 public class LoginActivity extends Activity {
 
-	private SharedPreferences prefs_system;
 	Settings settings;
+
+	Intent service_intent;
+	BroadcastReceiver broadcastReceiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +39,26 @@ public class LoginActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
 
-		prefs_system = getSharedPreferences("system", 0);
 		settings = (Settings) getApplicationContext();
+		
+		setBroadcast_stopService();
+		
+		if(service_intent!=null){
+			stopService(service_intent);
+			service_intent = null;
+		}
 
-		if(!prefs_system.getString("shop_id", "").equals("")){
-			settings.shop_id = prefs_system.getString("shop_id", "");
-			settings.shop_name = prefs_system.getString("shop_name", "");
-			settings.shop_url = prefs_system.getString("shop_url", "");
+		if(service_intent==null){
+			ComponentName componentName = new ComponentName("com.tktv.alimi", "com.tktv.alimi.Settings.Socket");
+			service_intent = new Intent();
+			service_intent.setComponent(componentName);
+			startService(service_intent);
+		}
+
+		if(!settings.getPref("shop_id").equals("")){
+			settings.shop_id = settings.getPref("shop_id");
+			settings.shop_name = settings.getPref("shop_name");
+			settings.shop_url = settings.getPref("shop_url");
 			startActivity(new Intent(this, MainActivity.class));
 			finish();
 		}
@@ -48,6 +66,24 @@ public class LoginActivity extends Activity {
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction().add(R.id.container, new PlaceholderFragment()).commit();
 		}
+	}
+
+	public void setBroadcast_stopService(){
+		broadcastReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Log.i("setBroadcast_stopService","LOAD");
+				stopService(service_intent);
+			}
+		};
+
+		registerReceiver(broadcastReceiver, new IntentFilter(MainActivity.BROADCAST_ACTION_STOP_SERVICE));
+	}
+	
+	@Override
+	public void onDestroy(){
+		super.onDestroy();
+		unregisterReceiver(broadcastReceiver);
 	}
 
 	public static class PlaceholderFragment extends Fragment implements OnClickListener {
@@ -62,8 +98,6 @@ public class LoginActivity extends Activity {
 		private String str_pw = "";
 
 		Settings settings;
-		private SharedPreferences prefs_system;
-		private SharedPreferences.Editor editor_system;
 
 		public PlaceholderFragment() {
 		}
@@ -73,9 +107,6 @@ public class LoginActivity extends Activity {
 			View rootView = inflater.inflate(R.layout.fragment_login,container, false);
 
 			settings = (Settings) getActivity().getApplicationContext();
-
-			prefs_system = getActivity().getSharedPreferences("system", 0);
-			editor_system = prefs_system.edit();
 
 			ll_loading = (LinearLayout)rootView.findViewById(R.id.ll_loading);
 			btnLogin = (Button)rootView.findViewById(R.id.btnLogin);
@@ -118,10 +149,9 @@ public class LoginActivity extends Activity {
 			protected void onPostExecute(Boolean result) {
 				ll_loading.setVisibility(View.GONE);
 				if(result){
-					editor_system.putString("shop_id", settings.shop_id);
-					editor_system.putString("shop_name", settings.shop_name);
-					editor_system.putString("shop_url", settings.shop_url);
-					editor_system.commit();
+					settings.setPref("shop_id", settings.shop_id);
+					settings.setPref("shop_name", settings.shop_name);
+					settings.setPref("shop_url", settings.shop_url);
 					startActivity(new Intent(getActivity(), MainActivity.class));
 					getActivity().finish();
 				}else{

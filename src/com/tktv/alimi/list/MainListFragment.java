@@ -23,10 +23,13 @@ public class MainListFragment extends Fragment {
 	private LinearLayout ll_list;
 	ProgressBar pb;
 
-	String[] str_no;
-	String[] str_name;
-	String[] str_rdate;
-	String[] str_date;
+	String[] str_no=null;
+	String[] str_name=null;
+	String[] str_rdate=null;
+	String[] str_date=null;
+	
+	private String[] nodeTitle=null;
+	private String[] nodeName=null;
 
 	Settings settings;
 
@@ -51,10 +54,15 @@ public class MainListFragment extends Fragment {
 
 	class ListTask extends AsyncTask<Void, Void, Boolean> {
 		protected Boolean doInBackground(Void... Void) {
-			str_no = xmlParser.XMLParse(settings.shop_url,"rsv", "No");
-			str_name = xmlParser.XMLParse(settings.shop_url,"rsv", "Name");
-			str_rdate = xmlParser.XMLParse(settings.shop_url,"rsv", "CDate");
-			str_date = xmlParser.XMLParse(settings.shop_url,"rsv", "RSubDate");
+			nodeTitle = xmlParser.XMLParse(settings.shop_url,"item", "title");
+			nodeName = xmlParser.XMLParse(settings.shop_url,"item", "name");
+			
+			for(int i=0;i<nodeTitle.length;i++){
+				if(nodeName[i].equals("번호")) str_no = xmlParser.XMLParse(settings.shop_url,"rsv", nodeTitle[i]);
+				else if(nodeName[i].equals("이름")) str_name = xmlParser.XMLParse(settings.shop_url,"rsv", nodeTitle[i]);
+				else if(nodeName[i].equals("예약일시")) str_rdate = xmlParser.XMLParse(settings.shop_url,"rsv", nodeTitle[i]);
+				else if(str_date == null) str_date = xmlParser.XMLParse(settings.shop_url,"rsv", "RSubDate");
+			}
 			return true;
 		}
 		protected void onPostExecute(Boolean result) {

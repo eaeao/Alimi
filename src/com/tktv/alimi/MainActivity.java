@@ -3,6 +3,7 @@ package com.tktv.alimi;
 import java.util.Locale;
 
 import com.tktv.alimi.Settings.Settings;
+import com.tktv.alimi.Settings.Socket;
 import com.tktv.alimi.list.MainListFragment;
 
 import android.app.Activity;
@@ -12,44 +13,30 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TabWidget;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements ActionBar.TabListener {
+	
+	public static final String BROADCAST_ACTION_ON_CONNECT = "com.tktv.alimi.Socket_onConnect";
+	public static final String BROADCAST_ACTION_STOP_SERVICE = "com.tktv.alimi.Socket_stopService";
 
 	SectionsPagerAdapter mSectionsPagerAdapter;
 	ViewPager mViewPager;
 	
-	Intent service_intent;
 	Settings settings;
-	private SharedPreferences prefs_system;
-	private SharedPreferences.Editor editor_system;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		ComponentName componentName = new ComponentName("com.tktv.alimi", "com.tktv.alimi.Settings.Socket");
-		service_intent = new Intent();
-		service_intent.setComponent(componentName);
-		startService(service_intent);
 		
 		settings = (Settings) getApplicationContext();
-		prefs_system = getSharedPreferences("system", 0);
-		editor_system = prefs_system.edit();
 
 		setTitle(settings.shop_name);
 		
@@ -72,6 +59,10 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
 			actionBar.addTab(actionBar.newTab().setText(mSectionsPagerAdapter.getPageTitle(i)).setTabListener(this));
 		}
+		
+		Intent intent = new Intent(BROADCAST_ACTION_ON_CONNECT);
+		intent.putExtra("shop_id", settings.shop_id);
+		sendBroadcast(intent);
 	}
 
 	@Override
@@ -84,10 +75,10 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if(item != null){
+			Intent intent = new Intent(BROADCAST_ACTION_STOP_SERVICE);
+			sendBroadcast(intent);
 			Toast.makeText(this,""+item.getTitle(), Toast.LENGTH_SHORT).show();
-			stopService(service_intent);
-			editor_system.clear();
-			editor_system.commit();
+			settings.clearPref();
 			startActivity(new Intent(this, LoginActivity.class));
 			finish();
 			return true;

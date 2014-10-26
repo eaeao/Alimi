@@ -11,33 +11,39 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.tktv.alimi.LoginActivity;
+import com.tktv.alimi.MainActivity;
 import com.tktv.alimi.R;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
 public class Socket extends Service {
 
 	private SocketIO socket = null;
-	public final String TAG = "ServiceMine"; 
+	public static final String TAG = "com.tktv.alimi.Settings.Socket"; 
 
-	private SharedPreferences prefs_system;
+	private String shop_id="";
+
 	Settings settings;
+	BroadcastReceiver broadcastReceiver;
 
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
 
 		settings = (Settings) getApplicationContext();
-		prefs_system = getSharedPreferences("system", 0);
 
 		startSocket();
+		setBroadcast_onConnect();
 	}
 
 	private void startSocket(){
@@ -53,15 +59,7 @@ public class Socket extends Service {
 			public void onConnect() {
 				// TODO Auto-generated method stub
 				System.out.println("Connection established");
-
-				JSONObject jo_con = new JSONObject();
-				try {
-					jo_con.put("sid", prefs_system.getString("shop_id", ""));
-					socket.emit("setAdmin", jo_con);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				setAdmin(shop_id);
 			}
 
 			@Override
@@ -132,6 +130,36 @@ public class Socket extends Service {
 		}
 	}
 
+	public void setBroadcast_onConnect(){
+		broadcastReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Log.i("setBroadcast_onConnect","LOAD");
+
+				Bundle extra = intent.getExtras();
+				shop_id = extra.getString("shop_id","");
+				if(socket.isConnected()){
+					setAdmin(extra.getString("shop_id",""));
+				}
+			}
+		};
+
+		registerReceiver(broadcastReceiver, new IntentFilter(MainActivity.BROADCAST_ACTION_ON_CONNECT));
+	}
+
+	private void setAdmin(String sid){
+		if(!sid.equals("")){
+			JSONObject jo_con = new JSONObject();
+			try {
+				jo_con.put("sid", sid);
+				socket.emit("setAdmin", jo_con);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 	@SuppressWarnings("deprecation")
 	private void setNotification(String msg){
 		NotificationManager notiMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -163,6 +191,7 @@ public class Socket extends Service {
 	public void onDestroy(){
 		super.onDestroy();
 		socket.disconnect();
+		unregisterReceiver(broadcastReceiver);
 	}
 
 	@Override
