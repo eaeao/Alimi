@@ -33,9 +33,10 @@ public class Functions{
 		
 		if(unixtime < now){
 			long diff = now - unixtime;
-			if(diff < 3600) return diff+"분 전";
-			else if(diff < 86400) return diff+"시간 전";
-			else if(diff < 259200) return diff+"일 전";
+			if(diff < 60) return "조금 전";
+			if(diff < 3600) return (diff/60)+"분 전";
+			else if(diff < 86400) return (diff/3600)+"시간 전";
+			else if(diff < 259200) return (diff/86400)+"일 전";
 			else{
 				Date date = new Date(unixtime*1000);
 			    SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd\nHH:mm:ss");
