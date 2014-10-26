@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.tktv.alimi.DetailActivity" >
+
+    <item
+        android:id="@+id/action_call"
+        android:icon="@android:drawable/ic_menu_call"
+        android:title="CALL"
+        android:showAsAction="always|withText" />
+    
+    <item
+        android:id="@+id/action_sms"
+        android:icon="@android:drawable/ic_menu_send"
+        android:title="SMS"
+        android:showAsAction="always|withText" />
+    
+    <item
+        android:id="@+id/action_delete"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="삭제하기"
+        android:showAsAction="never" />
+
+</menu>
