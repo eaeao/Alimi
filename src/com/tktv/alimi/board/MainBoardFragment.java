@@ -1,8 +1,10 @@
-package com.tktv.alimi.list;
+package com.tktv.alimi.board;
 
 import com.tktv.alimi.R;
 import com.tktv.alimi.Settings.Settings;
 import com.tktv.alimi.Settings.xmlParser;
+import com.tktv.alimi.list.DetailActivity;
+import com.tktv.alimi.list.MainListCell;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -17,15 +19,16 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-public class MainListFragment extends Fragment {
+public class MainBoardFragment extends Fragment {
 
 	View layout;
 	private LinearLayout ll_list;
 	ProgressBar pb;
 
 	String[] str_no=null;
+	String[] str_title=null;
 	String[] str_name=null;
-	String[] str_rdate=null;
+	String[] str_board=null;
 	String[] str_date=null;
 	
 	private String[] nodeTitle=null;
@@ -54,23 +57,24 @@ public class MainListFragment extends Fragment {
 
 	class ListTask extends AsyncTask<Void, Void, Boolean> {
 		protected Boolean doInBackground(Void... Void) {
-			nodeTitle = xmlParser.XMLParse(settings.shop_url,"item", "title");
-			nodeName = xmlParser.XMLParse(settings.shop_url,"item", "name");
+			nodeTitle = xmlParser.XMLParse(settings.shop_url2,"item", "title");
+			nodeName = xmlParser.XMLParse(settings.shop_url2,"item", "name");
 			
 			for(int i=0;i<nodeTitle.length;i++){
-				if(nodeName[i].equals("번호")) str_no = xmlParser.XMLParse(settings.shop_url,"rsv", nodeTitle[i]);
-				else if(nodeName[i].equals("이름")) str_name = xmlParser.XMLParse(settings.shop_url,"rsv", nodeTitle[i]);
-				else if(nodeName[i].equals("예약일시")) str_rdate = xmlParser.XMLParse(settings.shop_url,"rsv", nodeTitle[i]);
-				else if(str_date == null) str_date = xmlParser.XMLParse(settings.shop_url,"rsv", "RSubDate");
+				if(nodeName[i].equals("번호")) str_no = xmlParser.XMLParse(settings.shop_url2,"rsv", nodeTitle[i]);
+				else if(nodeName[i].equals("제목")) str_title = xmlParser.XMLParse(settings.shop_url2,"rsv", nodeTitle[i]);
+				else if(nodeName[i].equals("게시자")) str_name = xmlParser.XMLParse(settings.shop_url2,"rsv", nodeTitle[i]);
+				else if(nodeName[i].equals("게시판명")) str_board = xmlParser.XMLParse(settings.shop_url2,"rsv", nodeTitle[i]);
+				else if(str_date == null) str_date = xmlParser.XMLParse(settings.shop_url2,"rsv", "Rwdate");
 			}
 			return true;
 		}
 		protected void onPostExecute(Boolean result) {
 			if(result){
 				for(int i=0;i<str_name.length;i++){
-					String[] parse = {str_no[i], str_name[i], str_rdate[i], str_date[i]};
-					MainListCell mlc = new MainListCell(getActivity(),parse,i);
-					View v = mlc.getView();
+					String[] parse = {str_no[i], str_title[i], str_name[i], str_board[i], str_date[i]};
+					MainBoardCell mbc = new MainBoardCell(getActivity(),parse,i);
+					View v = mbc.getView();
 					v.setTag(i);
 					v.setOnClickListener(new OnClickListener() {
 						@Override
@@ -80,7 +84,7 @@ public class MainListFragment extends Fragment {
 							Vibe.vibrate(20);
 
 							Intent gin = new Intent(getActivity(),DetailActivity.class);
-							gin.putExtra("mode", "list");
+							gin.putExtra("mode", "board");
 							gin.putExtra("id", v.getTag().toString());
 							startActivity(gin);
 						}

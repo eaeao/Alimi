@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import com.tktv.alimi.Settings.Settings;
 import com.tktv.alimi.Settings.Socket;
+import com.tktv.alimi.board.MainBoardFragment;
 import com.tktv.alimi.list.MainListFragment;
 
 import android.app.Activity;
@@ -108,28 +109,45 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 
 		@Override
 		public Fragment getItem(int position) {
-			switch(position){
-			case 0:
-				return new MainListFragment();
-//			case 1:
-//				return new MainSettingFragment();
+			if(settings.shop_url2.equals("")){
+				switch(position){
+				case 0:
+					return new MainListFragment();
+				}
+			}
+			else{
+				switch(position){
+				case 0:
+					return new MainListFragment();
+				case 1:
+					return new MainBoardFragment();
+				}
 			}
 			return null;
 		}
 
 		@Override
 		public int getCount() {
-			return 1;
+			if(settings.shop_url2.equals("")) return 1;
+			else return 2;
 		}
 
 		@Override
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
-			switch (position) {
-			case 0:
-				return getString(R.string.title_section1).toUpperCase(l);
-//			case 1:
-//				return getString(R.string.title_section2).toUpperCase(l);
+			if(settings.shop_url2.equals("")){
+				switch (position) {
+				case 0:
+					return getString(R.string.title_section1).toUpperCase(l);
+				}
+			}
+			else{
+				switch (position) {
+				case 0:
+					return getString(R.string.title_section1).toUpperCase(l);
+				case 1:
+					return getString(R.string.title_section2).toUpperCase(l);
+				}
 			}
 			return null;
 		}

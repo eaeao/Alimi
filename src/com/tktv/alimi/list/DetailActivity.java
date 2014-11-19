@@ -38,6 +38,8 @@ import android.os.Build;
 public class DetailActivity extends Activity implements OnClickListener {
 
 	private LinearLayout ll_list;
+	
+	private String mode;
 
 	private String[] strTitle;
 	private String[] strName;
@@ -57,6 +59,7 @@ public class DetailActivity extends Activity implements OnClickListener {
 		settings = (Settings) getApplicationContext();
 		extra = getIntent().getExtras();
 
+		mode = extra.getString("mode");
 		list_no = Integer.parseInt(extra.getString("id"));
 
 		ll_list = (LinearLayout)findViewById(R.id.ll_list);
@@ -69,26 +72,46 @@ public class DetailActivity extends Activity implements OnClickListener {
 
 	class DetailTask extends AsyncTask<Void, Void, Boolean> {
 		protected Boolean doInBackground(Void... Void) {
-			strTitle = xmlParser.XMLParse(settings.shop_url,"item", "title");
-			strName = xmlParser.XMLParse(settings.shop_url,"item", "name");
-			strContent = new String[strTitle.length];
-			for(int i=0; i<strTitle.length;i++){
-				strContent[i] = xmlParser.XMLParse(settings.shop_url,"rsv", strTitle[i])[list_no];
+			if(mode.equals("list")){
+				strTitle = xmlParser.XMLParse(settings.shop_url,"item", "title");
+				strName = xmlParser.XMLParse(settings.shop_url,"item", "name");
+				strContent = new String[strTitle.length];
+				for(int i=0; i<strTitle.length;i++){
+					strContent[i] = xmlParser.XMLParse(settings.shop_url,"rsv", strTitle[i])[list_no];
+				}
+			}else{
+				strTitle = xmlParser.XMLParse(settings.shop_url2,"item", "title");
+				strName = xmlParser.XMLParse(settings.shop_url2,"item", "name");
+				strContent = new String[strTitle.length];
+				for(int i=0; i<strTitle.length;i++){
+					strContent[i] = xmlParser.XMLParse(settings.shop_url2,"rsv", strTitle[i])[list_no];
+				}
 			}
 			return true;
 		}
 		protected void onPostExecute(Boolean result) {
 			if(result){
-				for(int i=0; i<strTitle.length;i++){
-					if(strName[i].equals("이름")) setTitle(strContent[i]);
-					if(strName[i].equals("연락처")) strCall=strContent[i];
-					if(strName[i].equals("번호")) strNo=strContent[i];
-					String[] parse = {strName[i], strContent[i]};
-					DetailListCell dlc = new DetailListCell(DetailActivity.this, parse, i);
-					View v = dlc.getView();
-					ll_list.addView(v);
+				if(mode.equals("list")){
+					for(int i=0; i<strTitle.length;i++){
+						if(strName[i].equals("이름")) setTitle(strContent[i]);
+						if(strName[i].equals("연락처")) strCall=strContent[i];
+						if(strName[i].equals("번호")) strNo=strContent[i];
+						String[] parse = {strName[i], strContent[i]};
+						DetailListCell dlc = new DetailListCell(DetailActivity.this, parse, i);
+						View v = dlc.getView();
+						ll_list.addView(v);
+					}
+					ll_list.removeView(pb);
+				}else{
+					for(int i=0; i<strTitle.length;i++){
+						if(strName[i].equals("제목")) setTitle(strContent[i]);
+						String[] parse = {strName[i], strContent[i]};
+						DetailListCell dlc = new DetailListCell(DetailActivity.this, parse, i);
+						View v = dlc.getView();
+						ll_list.addView(v);
+					}
+					ll_list.removeView(pb);
 				}
-				ll_list.removeView(pb);
 			}
 			return;
 		}
@@ -110,8 +133,9 @@ public class DetailActivity extends Activity implements OnClickListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-
-		getMenuInflater().inflate(R.menu.detail, menu);
+		if(mode.equals("list")){
+			getMenuInflater().inflate(R.menu.detail, menu);
+		}
 		return true;
 	}
 

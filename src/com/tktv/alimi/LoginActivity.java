@@ -59,6 +59,7 @@ public class LoginActivity extends Activity {
 			settings.shop_id = settings.getPref("shop_id");
 			settings.shop_name = settings.getPref("shop_name");
 			settings.shop_url = settings.getPref("shop_url");
+			settings.shop_url2 = settings.getPref("shop_url2");
 			startActivity(new Intent(this, MainActivity.class));
 			finish();
 		}
@@ -141,6 +142,7 @@ public class LoginActivity extends Activity {
 					settings.shop_id = ja.getJSONObject(0).getString("sid");
 					settings.shop_name = ja.getJSONObject(0).getString("sname");
 					settings.shop_url = ja.getJSONObject(0).getString("url");
+					settings.shop_url2 = ja.getJSONObject(0).getString("url2");
 					return true;
 				}catch(Exception e){
 					return false;
@@ -152,6 +154,7 @@ public class LoginActivity extends Activity {
 					settings.setPref("shop_id", settings.shop_id);
 					settings.setPref("shop_name", settings.shop_name);
 					settings.setPref("shop_url", settings.shop_url);
+					settings.setPref("shop_url2", settings.shop_url2);
 					startActivity(new Intent(getActivity(), MainActivity.class));
 					getActivity().finish();
 				}else{
