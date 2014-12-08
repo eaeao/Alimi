@@ -3,7 +3,6 @@ package com.tktv.alimi;
 import java.util.Locale;
 
 import com.tktv.alimi.Settings.Settings;
-import com.tktv.alimi.Settings.Socket;
 import com.tktv.alimi.board.MainBoardFragment;
 import com.tktv.alimi.list.MainListFragment;
 
@@ -12,20 +11,15 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements ActionBar.TabListener {
-	
-	public static final String BROADCAST_ACTION_ON_CONNECT = "com.tktv.alimi.Socket_onConnect";
-	public static final String BROADCAST_ACTION_STOP_SERVICE = "com.tktv.alimi.Socket_stopService";
 
 	SectionsPagerAdapter mSectionsPagerAdapter;
 	ViewPager mViewPager;
@@ -60,10 +54,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
 			actionBar.addTab(actionBar.newTab().setText(mSectionsPagerAdapter.getPageTitle(i)).setTabListener(this));
 		}
-		
-		Intent intent = new Intent(BROADCAST_ACTION_ON_CONNECT);
-		intent.putExtra("shop_id", settings.shop_id);
-		sendBroadcast(intent);
 	}
 
 	@Override
@@ -76,8 +66,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if(item != null){
-			Intent intent = new Intent(BROADCAST_ACTION_STOP_SERVICE);
-			sendBroadcast(intent);
 			Toast.makeText(this,""+item.getTitle(), Toast.LENGTH_SHORT).show();
 			settings.clearPref();
 			startActivity(new Intent(this, LoginActivity.class));

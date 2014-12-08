@@ -1,5 +1,14 @@
 package com.tktv.alimi.list;
 
+import android.annotation.TargetApi;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.util.Log;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.tktv.alimi.R;
 import com.tktv.alimi.Settings.Settings;
 import com.tktv.alimi.Settings.xmlParser;
@@ -17,8 +26,9 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-public class MainListFragment extends Fragment {
+import java.io.IOException;
 
+public class MainListFragment extends Fragment {
 	View layout;
 	private LinearLayout ll_list;
 	ProgressBar pb;
