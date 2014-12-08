@@ -9,7 +9,7 @@ public class Settings extends Application{
 	public String shop_name = "";
 	public String shop_url = "";
 	public String shop_url2 = "";
-	public String URL = "http://192.168.36.129/";
+	public String URL = "http://eaeao.herokuapp.com/";
 	
 	private SharedPreferences prefs_system;
 	private SharedPreferences.Editor editor_system;
