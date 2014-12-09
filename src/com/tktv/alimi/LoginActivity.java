@@ -58,15 +58,6 @@ public class LoginActivity extends Activity {
 
 		context = this;
 
-		if (!settings.getPref("shop_id").equals("")) {
-			settings.shop_id = settings.getPref("shop_id");
-			settings.shop_name = settings.getPref("shop_name");
-			settings.shop_url = settings.getPref("shop_url");
-			settings.shop_url2 = settings.getPref("shop_url2");
-			startActivity(new Intent(this, MainActivity.class));
-			finish();
-		}
-
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction().add(R.id.container, new PlaceholderFragment()).commit();
 		}
@@ -84,18 +75,22 @@ public class LoginActivity extends Activity {
 	}
 
 	private boolean checkPlayServices() {
-		int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-		if (resultCode != ConnectionResult.SUCCESS) {
-			if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-				GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-						PLAY_SERVICES_RESOLUTION_REQUEST).show();
-			} else {
-				Log.i(TAG, "This device is not supported.");
-				finish();
+		try{
+			int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+			if (resultCode != ConnectionResult.SUCCESS) {
+				if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+					GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+							PLAY_SERVICES_RESOLUTION_REQUEST).show();
+				} else {
+					Log.i(TAG, "This device is not supported.");
+					finish();
+				}
+				return false;
 			}
+			return true;
+		}catch(Exception e){
 			return false;
 		}
-		return true;
 	}
 
 	private void storeRegistrationId(Context context, String regId) {
@@ -140,21 +135,10 @@ public class LoginActivity extends Activity {
 					}
 					regid = gcm.register(SENDER_ID);
 					msg = "Device registered, registration ID=" + regid;
-
-					// You should send the registration ID to your server over HTTP, so it
-					// can use GCM/HTTP or CCS to send messages to your app.
+					settings.Phone_regid = regid;
 					sendRegistrationIdToBackend();
-
-					// For this demo: we don't need to send it because the device will send
-					// upstream messages to a server that echo back the message using the
-					// 'from' address in the message.
-
-					// Persist the regID - no need to register again.	storeRegistrationId(context, regid);
 				} catch (IOException ex) {
 					msg = "Error :" + ex.getMessage();
-					// If there is an error, don't just keep trying to register.
-					// Require the user to click a button again, or perform
-					// exponential back-off.
 				}
 				return msg;
 			}
@@ -225,6 +209,15 @@ public class LoginActivity extends Activity {
 
 			btnLogin.setOnClickListener((OnClickListener) this);
 
+			if (!settings.getPref("shop_id").equals("")) {
+				settings.shop_id = settings.getPref("shop_id");
+				settings.shop_pw = settings.getPref("shop_pw");
+				settings.shop_name = settings.getPref("shop_name");
+				settings.shop_url = settings.getPref("shop_url");
+				settings.shop_url2 = settings.getPref("shop_url2");
+				tryLogin(settings.shop_id,settings.shop_pw);
+			}
+
 			return rootView;
 		}
 
@@ -233,22 +226,29 @@ public class LoginActivity extends Activity {
 			// TODO Auto-generated method stub
 			switch (v.getId()) {
 				case R.id.btnLogin:
-					str_id = etID.getText().toString();
-					str_pw = etPW.getText().toString();
-					if (!str_id.equals("") && !str_pw.equals("")) {
-						ll_loading.setVisibility(View.VISIBLE);
-						Log.i("Click", "!!");
-						new LoginTask().execute((Void) null);
-					}
+					tryLogin(etID.getText().toString(),etPW.getText().toString());
 					break;
+			}
+		}
+
+		private void tryLogin(String sid, String spw){
+			str_id = sid;
+			str_pw = spw;
+			if (!str_id.equals("") && !str_pw.equals("")) {
+				ll_loading.setVisibility(View.VISIBLE);
+				Log.i("Click", "!!");
+				new LoginTask().execute((Void) null);
 			}
 		}
 
 		class LoginTask extends AsyncTask<Void, Void, Boolean> {
 			protected Boolean doInBackground(Void... Void) {
 				try {
-					ja = Functions.GET("http://eaeao.herokuapp.com/login/?sid=" + str_id + "&pw=" + str_pw);
+					String url = "http://eaeao.herokuapp.com/login/?sid=" + str_id + "&pw=" + str_pw + "&regid=" + settings.Phone_regid;
+					Log.i("URL>>>>>>>>>>",url);
+					ja = Functions.GET(url);
 					settings.shop_id = ja.getJSONObject(0).getString("sid");
+					settings.shop_pw = str_pw;
 					settings.shop_name = ja.getJSONObject(0).getString("sname");
 					settings.shop_url = ja.getJSONObject(0).getString("url");
 					settings.shop_url2 = ja.getJSONObject(0).getString("url2");
@@ -262,6 +262,7 @@ public class LoginActivity extends Activity {
 				ll_loading.setVisibility(View.GONE);
 				if (result) {
 					settings.setPref("shop_id", settings.shop_id);
+					settings.setPref("shop_pw", settings.shop_pw);
 					settings.setPref("shop_name", settings.shop_name);
 					settings.setPref("shop_url", settings.shop_url);
 					settings.setPref("shop_url2", settings.shop_url2);

@@ -6,9 +6,11 @@ import android.content.SharedPreferences;
 public class Settings extends Application{
 	
 	public String shop_id = "";
+	public String shop_pw = "";
 	public String shop_name = "";
 	public String shop_url = "";
 	public String shop_url2 = "";
+	public String Phone_regid = "";
 	public String URL = "http://eaeao.herokuapp.com/";
 	
 	private SharedPreferences prefs_system;

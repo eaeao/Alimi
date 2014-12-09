@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_alimi" default="compile.module.alimi">
+  <dirname property="module.alimi.basedir" file="${ant.file.module_alimi}"/>
+  
+  <property name="module.jdk.home.alimi" value="${jdk.home.android_api_16_platform}"/>
+  <property name="module.jdk.bin.alimi" value="${jdk.bin.android_api_16_platform}"/>
+  <property name="module.jdk.classpath.alimi" value="jdk.classpath.android_api_16_platform"/>
+  
+  <property name="compiler.args.alimi" value="-encoding EUC-KR -source 1.6 ${compiler.args}"/>
+  
+  <property name="alimi.output.dir" value="${module.alimi.basedir}/bin/classes"/>
+  <property name="alimi.testoutput.dir" value="${module.alimi.basedir}/bin/classes"/>
+  
+  <path id="alimi.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="alimi.module.production.classpath">
+    <path refid="${module.jdk.classpath.alimi}"/>
+    <path refid="library.google-play-services.classpath"/>
+    <path refid="library.android-query-full.0.26.7.classpath"/>
+    <path refid="library.android-support-v13.classpath"/>
+  </path>
+  
+  <path id="alimi.runtime.production.module.classpath">
+    <pathelement location="${alimi.output.dir}"/>
+    <path refid="library.google-play-services.classpath"/>
+    <path refid="library.android-query-full.0.26.7.classpath"/>
+    <path refid="library.android-support-v13.classpath"/>
+  </path>
+  
+  <path id="alimi.module.classpath">
+    <path refid="${module.jdk.classpath.alimi}"/>
+    <pathelement location="${alimi.output.dir}"/>
+    <path refid="library.google-play-services.classpath"/>
+    <path refid="library.android-query-full.0.26.7.classpath"/>
+    <path refid="library.android-support-v13.classpath"/>
+  </path>
+  
+  <path id="alimi.runtime.module.classpath">
+    <pathelement location="${alimi.output.dir}"/>
+    <path refid="library.google-play-services.classpath"/>
+    <path refid="library.android-query-full.0.26.7.classpath"/>
+    <path refid="library.android-support-v13.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.alimi">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.alimi">
+    <patternset refid="excluded.from.module.alimi"/>
+  </patternset>
+  
+  <path id="alimi.module.sourcepath">
+    <dirset dir="${module.alimi.basedir}">
+      <include name="src"/>
+      <include name="gen"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.alimi" depends="compile.module.alimi.production,compile.module.alimi.tests" description="Compile module Alimi"/>
+  
+  <target name="compile.module.alimi.production" depends="register.custom.compilers" description="Compile module Alimi; production classes">
+    <mkdir dir="${alimi.output.dir}"/>
+    <javac2 destdir="${alimi.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.alimi}/javac">
+      <compilerarg line="${compiler.args.alimi}"/>
+      <bootclasspath refid="alimi.module.bootclasspath"/>
+      <classpath refid="alimi.module.production.classpath"/>
+      <src refid="alimi.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.alimi"/>
+    </javac2>
+    
+    <copy todir="${alimi.output.dir}">
+      <fileset dir="${module.alimi.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.alimi.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.alimi.tests" depends="register.custom.compilers,compile.module.alimi.production" description="compile module Alimi; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.alimi" description="cleanup module">
+    <delete dir="${alimi.output.dir}"/>
+    <delete dir="${alimi.testoutput.dir}"/>
+  </target>
+</project>

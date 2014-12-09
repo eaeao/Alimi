@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -36,6 +37,8 @@ public class GcmIntentService extends IntentService {
         // in your BroadcastReceiver.
         String messageType = gcm.getMessageType(intent);
 
+        Log.i("Alimi","Running");
+
         if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
             /*
              * Filter messages based on message type. Since it is likely that GCM will be
@@ -61,11 +64,12 @@ public class GcmIntentService extends IntentService {
                 // Post notification of received message.
                 String mysid = settings.getPref("shop_id");
                 Log.i("shop_id",""+mysid);
+                Log.i("GCM-action",""+extras.getString("action").toString());
                 Log.i("GCM-shop_id",""+extras.getString("shop_id").toString());
                 Log.i("GCM-name",""+extras.getString("name").toString());
 
                 try{
-                    if (mysid.equals(extras.getString("shop_id").toString())) {
+                    if (extras.getString("action").toString().equals("alimi")&&mysid.equals(extras.getString("shop_id").toString())) {
                         setNotification(extras.getString("name").toString());
                     }
                     Log.i(TAG, "Received: " + extras.getString("name").toString());
@@ -90,5 +94,17 @@ public class GcmIntentService extends IntentService {
         noti.flags |= Notification.FLAG_AUTO_CANCEL;
 
         notiMgr.notify(0, noti);
+
+        PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOn = pm.isScreenOn();
+        Log.e("screen on.................................", ""+isScreenOn);
+
+        if(isScreenOn==false)
+        {
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE,"MyLock");
+            wl.acquire(10000);
+            PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyCpuLock");
+            wl_cpu.acquire(10000);
+        }
     }
 }
